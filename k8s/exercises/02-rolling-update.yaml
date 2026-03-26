@@ -17,8 +17,8 @@
 #        kubectl get pods -n explorer-lab -w
 #      Notice how pods are replaced one at a time (maxUnavailable: 1).
 #
-#   5. Verify the new version is deployed:
-#        curl -s $(minikube service explorer-app-service -n explorer-lab --url) | grep version
+#   5. Verify the new version is deployed (port-forward must be running):
+#        curl -s http://localhost:8080 | grep version
 #
 #   6. Now ROLLBACK to the previous version:
 #        kubectl rollout undo deployment/explorer-app -n explorer-lab

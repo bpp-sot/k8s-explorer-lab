@@ -11,9 +11,12 @@
 #   2. Watch the pods come up:
 #        kubectl get pods -n explorer-lab -w
 #
-#   3. In another terminal, repeatedly curl the service and watch
-#      the 'hostname' value change — that's load balancing!
-#        for i in $(seq 1 20); do curl -s $(minikube service explorer-app-service -n explorer-lab --url) | grep hostname; done
+#   3. In another terminal, start port-forwarding if not already running:
+#        bash scripts/port-forward.sh
+#
+#      Then in a third terminal, repeatedly curl the service and
+#      watch the 'hostname' value change — that's load balancing!
+#        for i in $(seq 1 20); do curl -s http://localhost:8080 | grep hostname; done
 #
 #   4. Try scaling further from the command line:
 #        kubectl scale deployment explorer-app -n explorer-lab --replicas=5
