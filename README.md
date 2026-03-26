@@ -107,7 +107,7 @@ Work through these exercises in order. Each builds on the previous one, and each
 
 ### Exercise 1 — Scaling and Load Balancing
 
-**Concepts:** Replicas, horizontal scaling, service-based load balancing
+**Concepts:** Replicas, horizontal scaling, service-based load balancing, cluster networking
 
 Scale the application from 1 to 3 replicas and observe how Kubernetes distributes incoming traffic across all running pods.
 
@@ -116,7 +116,16 @@ kubectl apply -f k8s/exercises/01-scaling.yaml
 kubectl get pods -n explorer-lab -w
 ```
 
-Repeatedly curl the app and watch the `hostname` field change — each unique hostname is a different pod handling your request.
+To see load balancing in action, make requests from **inside the cluster** via the Service DNS name:
+
+```bash
+kubectl exec -n explorer-lab deploy/explorer-app -- \
+  sh -c 'for i in $(seq 1 20); do wget -qO- http://explorer-app-service 2>/dev/null | grep hostname; done'
+```
+
+You should see different hostnames appearing — each one is a different pod handling the request.
+
+> **💡 Why not use port-forward?** `kubectl port-forward` connects to a *single pod* and stays pinned to it. It bypasses the Service and kube-proxy entirely, so you won't see traffic distributed across replicas. This is actually a useful teaching moment — in production, you'd use an Ingress controller or a LoadBalancer-type Service for external access, not port-forward.
 
 ---
 

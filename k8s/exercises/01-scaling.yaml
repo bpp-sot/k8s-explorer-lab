@@ -11,21 +11,45 @@
 #   2. Watch the pods come up:
 #        kubectl get pods -n explorer-lab -w
 #
-#   3. In another terminal, start port-forwarding if not already running:
-#        bash scripts/port-forward.sh
+#   3. Observe load balancing in action.
 #
-#      Then in a third terminal, repeatedly curl the service and
-#      watch the 'hostname' value change — that's load balancing!
-#        for i in $(seq 1 20); do curl -s http://localhost:8080 | grep hostname; done
+#      ⚠️  IMPORTANT: kubectl port-forward connects to a SINGLE pod
+#      and stays pinned to it. It bypasses the Service entirely, so
+#      you will NOT see traffic distributed across replicas from
+#      your browser or from localhost. This is a deliberate design
+#      choice — port-forward is a debugging tool, not a production
+#      ingress mechanism.
 #
-#   4. Try scaling further from the command line:
+#      To see the Service distributing traffic via kube-proxy, we
+#      need to make requests from INSIDE the cluster where the
+#      Service's ClusterIP is reachable:
+#
+#        kubectl exec -n explorer-lab deploy/explorer-app -- \
+#          sh -c 'for i in $(seq 1 20); do wget -qO- http://explorer-app-service 2>/dev/null | grep hostname; done'
+#
+#      You should see different hostnames appearing — each one is
+#      a different pod handling the request.
+#
+#   4. Compare with port-forward to see the difference:
+#        bash scripts/port-forward.sh          # Terminal 1
+#        for i in $(seq 1 20); do curl -s http://localhost:8080 | grep hostname; done   # Terminal 2
+#
+#      Notice how port-forward always returns the SAME hostname.
+#
+#   5. Try scaling further from the command line:
 #        kubectl scale deployment explorer-app -n explorer-lab --replicas=5
 #
+#      Then re-run the in-cluster request from step 3 — you should
+#      now see even more hostnames in the responses.
+#
 # QUESTIONS TO CONSIDER:
+#   - Why does port-forward not load-balance, but the Service does?
+#     (Hint: think about what kube-proxy and iptables rules do.)
 #   - What happened to existing traffic while new pods were starting?
-#   - Why might the hostname NOT change on every single request?
 #   - How does the readinessProbe affect when a new pod starts
 #     receiving traffic?
+#   - In production, what would you use instead of port-forward
+#     to expose the Service externally? (Hint: Ingress, LoadBalancer)
 # ──────────────────────────────────────────────────────────────────
 
 apiVersion: apps/v1
