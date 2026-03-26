@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: explorer-lab
+  labels:
+    purpose: learning
+    module: devops-topic-7

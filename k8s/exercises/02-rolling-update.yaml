@@ -1,0 +1,92 @@
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║  Exercise 2 — Rolling Updates and Rollbacks                    ║
+# ╚══════════════════════════════════════════════════════════════════╝
+#
+# GOAL:  Perform a zero-downtime update and then roll it back.
+#
+# INSTRUCTIONS:
+#   1. First, make sure Exercise 1 is applied (3 replicas running).
+#
+#   2. Apply this file to trigger a rolling update:
+#        kubectl apply -f k8s/exercises/02-rolling-update.yaml
+#
+#   3. Watch the rollout in real time:
+#        kubectl rollout status deployment/explorer-app -n explorer-lab
+#
+#   4. Observe the update strategy in action:
+#        kubectl get pods -n explorer-lab -w
+#      Notice how pods are replaced one at a time (maxUnavailable: 1).
+#
+#   5. Verify the new version is deployed:
+#        curl -s $(minikube service explorer-app-service -n explorer-lab --url) | grep version
+#
+#   6. Now ROLLBACK to the previous version:
+#        kubectl rollout undo deployment/explorer-app -n explorer-lab
+#
+#   7. Check the rollout history:
+#        kubectl rollout history deployment/explorer-app -n explorer-lab
+#
+# QUESTIONS TO CONSIDER:
+#   - Was there any downtime during the update? Why or why not?
+#   - What role do readiness probes play in a rolling update?
+#   - How does maxSurge vs maxUnavailable affect the update speed
+#     and resource usage?
+#   - In what situations would you prefer a Recreate strategy instead?
+# ──────────────────────────────────────────────────────────────────
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: explorer-app
+  namespace: explorer-lab
+  labels:
+    app: explorer-app
+  annotations:
+    kubernetes.io/change-cause: "Update to v2.0.0 — new homepage message"
+spec:
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: explorer-app
+  template:
+    metadata:
+      labels:
+        app: explorer-app
+        version: "2.0.0"          # <-- Updated label
+    spec:
+      containers:
+        - name: explorer-app
+          image: k8s-explorer-app:1.0.0
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            - name: APP_VERSION
+              value: "2.0.0"       # <-- Updated version
+            - name: NODE_ENV
+              value: "production"
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "128Mi"

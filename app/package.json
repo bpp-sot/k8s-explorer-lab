@@ -1,0 +1,16 @@
+{
+  "name": "k8s-explorer-app",
+  "version": "1.0.0",
+  "description": "A simple web app for exploring Kubernetes orchestration concepts",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node --test test/app.test.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0"
+  },
+  "author": "BPP DevOps Module",
+  "license": "MIT"
+}

@@ -1,0 +1,71 @@
+# ╔══════════════════════════════════════════════════════════════════╗
+# ║  Exercise 5 — Monitoring and Observability                     ║
+# ╚══════════════════════════════════════════════════════════════════╝
+#
+# GOAL:  Explore the built-in monitoring and observability tools
+#        that Kubernetes provides, and understand why external
+#        monitoring solutions are also needed in production.
+#
+# ──────────────────────────────────────────────────────────────────
+#
+# PART A: kubectl-based monitoring
+#
+#   1. View cluster-wide resource usage:
+#        kubectl top nodes
+#
+#   2. View per-pod resource usage:
+#        kubectl top pods -n explorer-lab
+#      (If metrics-server is not running, enable it first:
+#        minikube addons enable metrics-server
+#        # Wait ~60 seconds for it to collect data)
+#
+#   3. View detailed pod information:
+#        kubectl describe pod -n explorer-lab -l app=explorer-app
+#
+#   4. View container logs:
+#        kubectl logs -n explorer-lab -l app=explorer-app --tail=20
+#
+#   5. Stream logs in real time (useful during rolling updates):
+#        kubectl logs -n explorer-lab -l app=explorer-app -f
+#
+#   6. View events (K8s records key lifecycle moments):
+#        kubectl get events -n explorer-lab --sort-by='.lastTimestamp'
+#
+# ──────────────────────────────────────────────────────────────────
+#
+# PART B: Enable the Kubernetes Dashboard
+#
+#   1. Enable the dashboard addon:
+#        minikube addons enable dashboard
+#
+#   2. Launch it (this will open a browser or provide a URL):
+#        minikube dashboard --url
+#
+#   3. Explore: navigate to your explorer-lab namespace and examine
+#      Deployments, Pods, Services, and Events.
+#
+# ──────────────────────────────────────────────────────────────────
+#
+# PART C: Structured logging (discussion)
+#
+#   Look at the app's server.js — it uses console.log for output.
+#   In a production Kubernetes environment, you would typically:
+#     - Output structured JSON logs (not plain text)
+#     - Use a log aggregator (ELK stack, Grafana Loki, Datadog)
+#     - Implement distributed tracing (OpenTelemetry, Jaeger)
+#     - Use Prometheus + Grafana for metrics dashboards
+#
+# QUESTIONS TO CONSIDER:
+#   - What is the difference between monitoring and observability?
+#   - Why are liveness and readiness probes important for monitoring?
+#   - How would you detect a slow memory leak using these tools?
+#   - What metrics would you consider most critical for a
+#     production Kubernetes deployment?
+#   - How does centralised logging differ from running
+#     'kubectl logs' manually?
+# ──────────────────────────────────────────────────────────────────
+
+# This file enables the metrics-server addon via a script rather
+# than a manifest. Run the helper script instead:
+#
+#   bash scripts/enable-monitoring.sh
