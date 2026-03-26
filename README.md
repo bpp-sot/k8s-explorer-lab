@@ -22,7 +22,7 @@ By working through this lab, you will be able to:
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) running on your machine
 - ~4 GB of free RAM (Minikube needs 2 GB inside the container)
 
-> **GitHub Codespaces users:** This lab also works in Codespaces (4-core machine type recommended). Push this repo to GitHub and open it in a Codespace.
+> **GitHub Codespaces users:** This lab works well in Codespaces (4-core machine type recommended). Push this repo to GitHub and open it in a Codespace. Note that you will need to use `kubectl port-forward` (via `bash scripts/port-forward.sh`) to access the app — Minikube's node IP is not directly reachable in Codespaces.
 
 ---
 
@@ -51,12 +51,15 @@ This creates a `explorer-lab` namespace and deploys the app with a single replic
 ### 3. Access the Application
 
 ```bash
-# Get the URL for the app
-minikube service explorer-app-service -n explorer-lab --url
+# Start port-forwarding (works everywhere, including Codespaces)
+bash scripts/port-forward.sh
 
-# Or use curl directly
-curl $(minikube service explorer-app-service -n explorer-lab --url)
+# In Codespaces, a pop-up will offer to open the forwarded port in your browser.
+# You can also open a second terminal and use curl:
+curl http://localhost:8080
 ```
+
+> **Codespaces note:** Minikube's node IP (e.g. `192.168.49.2`) is not reachable inside a Codespace. Always use `kubectl port-forward` or the helper script above. Codespaces will detect the forwarded port and add it to the **Ports** tab automatically.
 
 Open the URL in your browser to see the app showing its pod hostname, version, and request count.
 
@@ -88,6 +91,7 @@ k8s-explorer-lab/
 │       └── 05-monitoring.yaml
 ├── scripts/
 │   ├── deploy.sh              # Deploy the base app
+│   ├── port-forward.sh        # Forward service to localhost (for Codespaces)
 │   ├── reset.sh               # Tear down and start fresh
 │   └── enable-monitoring.sh   # Enable metrics + dashboard
 └── README.md
